@@ -1,0 +1,27 @@
+def readFromFile(fileName, propName) {
+    def fileWithProps = project.rootProject.file(fileName)
+    if (!fileWithProps.exists()) {
+        return null
+    }
+    Properties properties = new Properties()
+    fileWithProps.newDataInputStream().withCloseable {
+        properties.load(it)
+    }
+    def propertyValue = properties.getProperty(propName.toString())
+    if (propertyValue != null) {
+        return propertyValue == "true"
+    }
+    return null
+}
+
+ext.getBoolPropertyFromConfig = { propName ->
+    def localResult = readFromFile('local.properties', propName)
+    if (localResult != null) {
+        return localResult
+    }
+    if (project.hasProperty(propName)) {
+        def prop = getProperty(propName)
+        return prop == "true"
+    }
+    return false
+}

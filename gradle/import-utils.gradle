@@ -1,0 +1,26 @@
+ext.includeModules = { String... paths ->
+    paths.each { includeSubProject(it, false) }
+}
+
+ext.includePlugin = { String path ->
+    includeSubProject(path, true)
+}
+
+def includeSubProject(String path, Boolean doPrint = true) {
+    include(path)
+
+    if (doPrint) print("* ${path}\n")
+    def subPrSettings = getSubprojectsSettings(path)
+    if (subPrSettings.exists()) {
+        apply from: subPrSettings.path
+    }
+}
+
+File getSubprojectsSettings(String path) {
+    def settingsFilePath = "${rootProject.projectDir.path}/${path.replace(':', '/')}/subprojects.gradle"
+    def f = new File(settingsFilePath)
+    if (f.exists())
+        return f
+    else
+        return new File("${settingsFilePath}.kts")
+}

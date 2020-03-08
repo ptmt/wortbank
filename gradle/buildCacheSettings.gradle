@@ -1,0 +1,107 @@
+/**
+ * Build cache configuration that was sharing between buildSrc and root projects until gradle 6.x.
+ * For now buildSrc project reuses caching settings from the root settings.gradle.
+ *
+ * It's assumed that the script will be included ('apply from') in settings.gradle files.
+ *
+ * Because of some gradle features or bugs it's necessary to configure buildscript sections for S3 plugin not only here but in outer scripts too.
+ * Also it's necessary to apply plugins by full class name in the script because it's a script plugin.
+ * More details are here: https://discuss.gradle.org/t/how-do-i-apply-a-plugin-to-a-project-from-a-shared-applied-gradle-file/7508/14
+ */
+
+boolean isCIRun = System.getenv("TEAMCITY_VERSION") != null
+
+enum RemoteCache {
+    STD, // Standard gradle HttpBuildCache.
+    S3
+}
+
+RemoteCache useRemoteCache = null
+if (ext.has("useRemoteCache")) {
+    def strVal = ext["useRemoteCache"].toString()
+    switch (strVal) {
+        case { RemoteCache.collect { it.toString() }.contains(strVal) }:
+            useRemoteCache = strVal as RemoteCache
+            break
+        case "true":
+            useRemoteCache = RemoteCache.STD
+            break
+    }
+}
+boolean pushToCache
+if (ext.has("pushToCache")) {
+    pushToCache = ext["pushToCache"]?.toBoolean() ?: false
+} else {
+    pushToCache = false
+}
+
+buildscript {
+    String useRemoteCacheBS
+    if (ext.has("useRemoteCache")) {
+        useRemoteCacheBS = ext["useRemoteCache"]
+    } else {
+        useRemoteCacheBS = null
+    }
+
+    switch (useRemoteCacheBS) {
+        case "S3":
+            println("buildCacheSettings.gradle: apply buildscriptConfForS3Cache.gradle")
+            apply from: "buildscriptConfForS3Cache.gradle", to: buildscript
+            break
+    }
+}
+
+buildCache {
+    println()
+    println("== Build gradle cache configuration ==")
+    println("CI run: $isCIRun")
+    println("Push to cache: $pushToCache")
+    println("useRemoteCache: $useRemoteCache")
+
+    if (isCIRun) {
+        local {
+            enabled false
+        }
+    }
+    switch (useRemoteCache) {
+        case RemoteCache.STD:
+            remote(HttpBuildCache) {
+                url = "https://circlet-kmv.labs.intellij.net:7443/cache/"
+                allowUntrustedServer = true
+                push = pushToCache
+                enabled = useRemoteCache
+                if (!isCIRun) { // Developers' local builds use credentials of user with read-only access.
+                    credentials {
+                        username = 'developer'
+                        password = 'dev-password'
+                    }
+                }
+            }
+            break
+
+        case RemoteCache.S3:
+            apply plugin: ch.myniva.gradle.caching.s3.AwsS3Plugin
+
+            remote(ch.myniva.gradle.caching.s3.AwsS3BuildCache) {
+                apply from: "../gradle/git-utils.gradle"
+
+                region "eu-west-1"
+                bucket "space-gradle-cache"
+
+                def gitCommitId = gitCommitId()
+                path = "cache/$gitCommitId"
+
+                println("Remote gradle cache: AWS S3 [region: $region, bucket: $bucket, path: $path]")
+
+                push = pushToCache
+                enabled = useRemoteCache
+            }
+            break
+
+        default:
+            println("No remote gradle cache configured")
+            break
+    }
+}
+
+

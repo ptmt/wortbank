@@ -1,0 +1,71 @@
+apply from: "${buildscript.sourceFile.parent}/properties-utils.gradle.kts"
+
+ext.kotlinx_serialization_version = '0.14.0'
+if (project.hasProperty("snapshot_kotlin_version")) {
+    ext.kotlin_version = snapshot_kotlin_version
+    ext.kotlinx_coroutines_version = snapshot_coroutines_version
+} else if (getIncludeIosModules.invoke()) {
+    ext.kotlin_version = '1.3.70-eap-274'
+    ext.kotlinx_coroutines_version = '1.3.3-1.3.70-eap-42'
+} else {
+    ext.kotlin_version = '1.3.70-eap-200'
+    ext.kotlinx_coroutines_version = '1.3.3'
+    ext.kotlinx_serialization_version = '0.14.0-1.3.70-eap-134'
+}
+
+println("Kotlin: ${ext.kotlin_version}")
+println("Kotlin coroutines: ${ext.kotlinx_coroutines_version}")
+
+ext.dokka_version = '0.9.13'
+ext.exposed_version = '0.17.6'
+ext.kotlin_jackson_version = '2.9.10'
+ext.jackson_version = '2.9.10'
+ext.ktor_version = '1.3.1'
+ext.rxkotlin_version = '0.55.0'
+ext.undercouch_gradle_plugin_version = '3.4.3'
+ext.kotlinx_html_version = '0.7.1'
+ext.kotlin_poet_version = '1.0.0'
+ext.kotlinx_io_version = '0.1.15'
+
+ext.css_version = '1.0.0-pre.92-kotlin-1.3.61'
+ext.mocha_version = '3.0.1-pre.92-kotlin-1.3.61'
+ext.react_version = '16.13.0-pre.92-kotlin-1.3.61'
+ext.react_dom_version = '16.13.0-pre.92-kotlin-1.3.61'
+ext.styled_version = '1.0.0-pre.92-kotlin-1.3.61'
+
+ext.anko_version = '0.10.4'
+ext.appcompat_version = '27.1.1'
+ext.glide_version = '4.11.0'
+ext.robolectric_version = '4.3'
+
+ext.junit_version = '4.13'
+ext.assertj_version = '3.11.1'
+ext.assertk_version = "0.21"
+ext.mockk_version = '1.8.9.kotlin13'
+ext.okhttp_version = '3.12.1'
+ext.sl4j_version = '1.7.25'
+ext.joda_time_version = '2.10.2'
+
+ext.h2_version = '1.4.197'
+
+ext.jgit_version = "jb-123"
+
+ext.aws_sdk_version = "2.8.7"
+ext.sshd_version = "2.4.0"
+ext.elasticsearch_version = "6.5.4"
+
+ext.apache_httpcomponents_core_version = "4.4.12"
+ext.apache_httpcomponents_httpclient_version = "4.5.10"
+ext.apache_commons_io_version = "2.6"
+ext.apache_commons_compress_version = "1.18"
+ext.apache_commons_cli_version = "1.4"
+
+ext.android_tools_build_gradle = "3.5.2"
+
+ext.node_plugin_version = "2.2.1"
+
+ext.twemoji_assets_version = "12.0"
+ext.clikt_version = "2.4.0"
+ext.apache_commons_text_version = "1.8"
+ext.apache_batik_transcoder_version = "1.12"
+ext.jsoup_version = "1.11.3"

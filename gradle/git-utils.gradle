@@ -1,0 +1,16 @@
+ext.gitCommitId = {
+    return execAndGetStdout('git', 'rev-parse', '--short=8', '--verify', 'HEAD')
+}
+
+ext.execAndGetStdout = { String... args ->
+    def stdout = new ByteArrayOutputStream()
+    exec {
+        commandLine(args)
+        standardOutput = stdout
+    }
+    return trimAtEnd(stdout.toString())
+}
+
+static String trimAtEnd(String str) {
+    return ('x' + str).trim().substring(1)
+}
