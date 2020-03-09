@@ -67,7 +67,8 @@ object Indexer {
             if (this.eventType == XMLStreamReader.START_ELEMENT && this.localName == "page") {
                 val page = readPage()
                 val parsedPage = parseWikiText(page.text)
-                println("parsed title <${page.title}> text length ${page.text.length}, tokens ${parsedPage.tokens}")
+                println("parsed title <${page.title}> text length ${page.text.length}, total tokens ${parsedPage.tokens.size}")
+                println(parsedPage.tokens.take(30))
                 yield()
                 i++
             }
