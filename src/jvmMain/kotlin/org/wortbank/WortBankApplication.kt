@@ -14,6 +14,9 @@ import io.ktor.response.respond
 import io.ktor.routing.get
 import io.ktor.routing.routing
 import kotlinx.html.*
+import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.sql.transactions.transaction
+import org.wortbank.indexer.Indexer
 
 fun HTML.sharedHeader(title: String) {
     head {
@@ -24,6 +27,7 @@ fun HTML.sharedHeader(title: String) {
 }
 
 class WortBankApplication {
+    val db = Database.connect("jdbc:sqlite:/data/data.db", "org.sqlite.JDBC")
     fun Application.main() {
         /**
          * First we install the features we need. They are bound to the whole application.
@@ -38,8 +42,9 @@ class WortBankApplication {
         install(StatusPages) {
             exception<Throwable> { cause ->
                 environment.log.error(cause.message)
+                cause.printStackTrace()
                 // val error = HttpBinError(code = HttpStatusCode.InternalServerError, request = call.request.local.uri, message = cause.toString(), cause = cause)
-                call.respond("500")
+                call.respond(cause)
             }
         }
 
@@ -48,6 +53,21 @@ class WortBankApplication {
                 call.respondHtml {
                     sharedHeader("WortBank — search specific texts based on given set of words")
                     landingPage()
+                }
+            }
+            get("/perform_index") {
+                val result = Indexer.perform()
+                call.respondHtml {
+                    sharedHeader("WortBank — search specific texts based on given set of words")
+                    body {
+                        pre {
+                            val sources = transaction(db) {
+                                ESource.count()
+                            }
+                            +"Sources: $sources"
+                            +result.toString()
+                        }
+                    }
                 }
             }
             static("/static") {

@@ -7,6 +7,7 @@ import io.ktor.routing.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import kotlinx.html.*
+import org.jetbrains.exposed.sql.Database
 import java.io.*
 
 actual class Sample {
@@ -19,11 +20,13 @@ actual object Platform {
 
 fun main() {
     embeddedServer(Netty,
-        watchPaths = listOf("src"),
+        watchPaths = listOf("wortbank"),
         port = 8080,
         module = Application::wortbank).start(wait = true)
 }
 
 fun Application.wortbank() {
+    val currentDir = File(".").absoluteFile
+    environment.log.info("Current directory: $currentDir")
     WortBankApplication().apply { main() }
 }

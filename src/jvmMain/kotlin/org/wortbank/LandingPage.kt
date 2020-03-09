@@ -4,43 +4,34 @@ import kotlinx.html.*
 
 fun HTML.landingPage() {
     body("text-center") {
-        div ("cover-container d-flex w-100 h-100 p-3 mx-auto flex-column")
-        header("masthead mb-auto") {
-            div("inner") {
-                h3("masthead-brand") {
-                    +"Cover"
+        div("cover-container d-flex w-100 h-100 p-3 mx-auto flex-column") {
+            header("masthead mb-auto") {
+                div("inner") {
+                    h3("masthead-brand") {
+                        +"WortBank"
+                    }
+                    nav("nav nav-masthead justify-content-center") {
+                        a(href="#", classes="nav-link active") { +"Home" }
+                        a(href="/howitworks", classes = "nav-link") { +"How it works" }
+                    }
                 }
             }
+
+            main("inner cover") {
+                role = "main"
+                h1("cover-heading") {
+                    +"WortBank"
+                }
+                p("lead") {
+                    textArea(rows = "3", classes = "form-control") {  }
+                }
+                button(classes = "btn btn-lg btn-secondary") { +"Search" }
+            }
+            footer("mastfoot mt-auto") {
+
+            }
+
         }
 
     }
-
-//                    <body class="text-center">
-//                    <div class="cover-container d-flex w-100 h-100 p-3 mx-auto flex-column">
-//                    <header class="masthead mb-auto">
-//                    <div class="inner">
-//                    <h3 class="masthead-brand">Cover</h3>
-//                    <nav class="nav nav-masthead justify-content-center">
-//                    <a class="nav-link active" href="#">Home</a>
-//                    <a class="nav-link" href="#">Features</a>
-//                    <a class="nav-link" href="#">Contact</a>
-//                    </nav>
-//                    </div>
-//                    </header>
-//
-//                    <main role="main" class="inner cover">
-//                    <h1 class="cover-heading">Cover your page.</h1>
-//                    <p class="lead">Cover is a one-page template for building simple and beautiful home pages. Download, edit the text, and add your own fullscreen background photo to make it your own.</p>
-//                    <p class="lead">
-//                    <a href="#" class="btn btn-lg btn-secondary">Learn more</a>
-//                    </p>
-//                    </main>
-//
-//                    <footer class="mastfoot mt-auto">
-//                    <div class="inner">
-//                    <p>Cover template for <a href="https://getbootstrap.com/">Bootstrap</a>, by <a href="https://twitter.com/mdo">@mdo</a>.</p>
-//                    </div>
-//                    </footer>
-//                    </div>
-//                    </body>
 }
