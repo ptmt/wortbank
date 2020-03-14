@@ -19,6 +19,8 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.transactions.transactionManager
 import org.sqlite.SQLiteConfig
 import org.wortbank.indexer.Indexer
+import org.wortbank.indexer.Storage
+import org.wortbank.indexer.WikiIndexer
 
 fun HTML.sharedHeader(title: String) {
     head {
@@ -40,7 +42,7 @@ fun <T> WortBankApplication.tx(statement: Transaction.() -> T) = db.tx(statement
 class WortBankApplication {
     val db = Database.connect("jdbc:sqlite:./index.db", "org.sqlite.JDBC").apply {
         tx {
-            SchemaUtils.create(DBSources, DBWords)
+            SchemaUtils.create(DBSources, DBLemmas, DBLemmasInDocuments, DBDocuments)
         }
     }
 
@@ -73,18 +75,29 @@ class WortBankApplication {
                 }
             }
             get("/perform_index") {
-                val result = Indexer.perform(db)
+                WikiIndexer(Storage(db)).perform()
                 call.respondHtml {
                     sharedHeader("WortBank — search specific texts based on given set of words")
                     body {
-                        div {
-                            val sources = tx {
-                                ESource.count()
+                        ul {
+                            li {
+                                val sources = tx {
+                                    ESource.count()
+                                }
+                                +"Sources: $sources"
                             }
-                            +"Sources: $sources"
-                        }
-                        div {
-                            +result.toString()
+                            li {
+                                val documents = tx {
+                                    EDocument.count()
+                                }
+                                +"Documents: $documents"
+                            }
+                            li {
+                                val lemmas = tx {
+                                    ELemma.count()
+                                }
+                                +"Lemmas: $lemmas"
+                            }
                         }
                     }
                 }

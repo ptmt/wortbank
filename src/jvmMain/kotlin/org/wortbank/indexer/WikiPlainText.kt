@@ -3,7 +3,6 @@ package org.wortbank.indexer
 import org.apache.commons.text.StringEscapeUtils
 import java.util.regex.Pattern
 
-
 class WikiPlainText(private val language: WikiLanguage) {
     enum class WikiLanguage {
         EN, DE

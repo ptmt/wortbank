@@ -5,9 +5,9 @@
       <configuration version="3" platform="JavaScript " allPlatforms="JS []" useProjectSettings="false" isTestModule="true" externalProjectId="wortbank">
         <dependsOnModuleNames>wortbank:commonTest</dependsOnModuleNames>
         <sourceSets>
+          <sourceSet>wortbank.jsMain</sourceSet>
           <sourceSet>wortbank.commonTest</sourceSet>
           <sourceSet>wortbank.commonMain</sourceSet>
-          <sourceSet>wortbank.jsMain</sourceSet>
         </sourceSets>
         <newMppModelJpsModuleKind>COMPILATION_AND_SOURCE_SET_HOLDER</newMppModelJpsModuleKind>
         <externalSystemTestTasks>jsBrowserTest|wortbank:jsTest|js</externalSystemTestTasks>
