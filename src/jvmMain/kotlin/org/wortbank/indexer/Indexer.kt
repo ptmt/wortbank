@@ -1,17 +1,11 @@
 package org.wortbank.indexer
 
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.yield
 import org.jetbrains.exposed.sql.Database
-import org.wortbank.indexer.Indexer.readFieldIfPresent
 import java.io.File
 import java.io.FileReader
 import javax.xml.stream.XMLInputFactory
-import javax.xml.stream.XMLStreamConstants
 import javax.xml.stream.XMLStreamReader
-import javax.xml.transform.TransformerFactory
-import javax.xml.transform.dom.DOMResult
-import javax.xml.transform.stax.StAXSource
 
 class Page(val title: String, val text: String)
 
@@ -63,16 +57,22 @@ object Indexer {
 
     private suspend fun XMLStreamReader.readPages() {
         var i = 0
-        while (hasNext() && i < 10) {
+        val frequencyMap = mutableMapOf<String, Int>()
+        while (hasNext() && i < 30) {
             if (this.eventType == XMLStreamReader.START_ELEMENT && this.localName == "page") {
                 val page = readPage()
-                val parsedPage = parseWikiText(page.text)
-                println("parsed title <${page.title}> text length ${page.text.length}, total tokens ${parsedPage.tokens.size}")
-                println(parsedPage.tokens.take(30))
+                val parsedPage = parseWikiText(page.title, page.text)
+                println("parsed title <${page.title}> text length ${page.text.length}, total tokens ${parsedPage.lemmas.size}")
+                parsedPage.lemmas.forEach {
+                    val prev = frequencyMap.getOrPut(it) { 0 }
+                    frequencyMap[it] = prev + 1
+                }
                 yield()
                 i++
             }
             next()
         }
+        val topTokens = frequencyMap.entries.sortedByDescending { it.value }.take(30).joinToString("\n")
+        println(topTokens)
     }
 }
