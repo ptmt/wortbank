@@ -74,7 +74,7 @@ val TigerTerminal.wordOrLemma get(): String {
     return if (lemma in listOf("-", "_", "*")) word else lemma
 }
 
-val filterOutSymbols = listOf("(", ")", "*", ",", "-", ".", ":", "/", "\\", "–", " ")
+val filterOutSymbols = listOf("(", ")", "[", "]", "*", ",", "-", ".", ":", "/", "\\", "–", " ")
 
 const val PARAM_UNIQUE_ID = "PARAM_UNIQUE_ID"
 
