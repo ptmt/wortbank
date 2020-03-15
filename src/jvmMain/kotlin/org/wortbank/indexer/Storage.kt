@@ -49,21 +49,16 @@ class Storage(private val db: Database) {
                     Pair(EDocument.wrapRow(it), Pair(it[DBLemmas.lemma], it[DBLemmasInDocuments.count]))
                 }
         }
-        val searchResults = res.groupBy({ it.first }) {
-            it.second
-        }.map { SearchResult(it.key, it.value.toMap()) }
-        //.mapValues { it.value.groupBy({ it.second }) { it.third } }
-
-//        s.forEach {
-//            println("res in ${it.key.title} keys ${it.value.keys} total ${it.value.values.sumBy { it.sum() }}")
-//        }
-        return searchResults
+       return res.groupBy({ it.first }) {
+                it.second
+            }.map { SearchResult(it.key, it.value.toMap()) }
+            .sortedByDescending { it.lemmas.size }
     }
 
     private fun Transaction.getOrPutLemma(lemma: String): ELemma {
         val existing = ELemma.find { DBLemmas.lemma eq lemma }.singleOrNull()
         return existing ?: ELemma.new {
-            this.lemma = lemma
+            this.lemma = lemma.take(200)
         }
     }
 }

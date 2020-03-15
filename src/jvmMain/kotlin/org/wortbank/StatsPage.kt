@@ -8,12 +8,12 @@ fun HTML.statsPage(stats: String) {
         h1("cover-heading") {
             +"Statistics:"
         }
+        pre {
+            code {
 
-        code {
-            pre {
                 +stats
+
             }
         }
-
     }
 }

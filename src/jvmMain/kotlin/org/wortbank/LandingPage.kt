@@ -13,7 +13,7 @@ fun HTML.landingPage() {
             p("lead") {
                 textArea(rows = "3", classes = "form-control") {
                     this.name = "bank"
-                    +"die Kopfhörer, das Ohr, Koffer, eigentlich, geschichte"
+                    +"Kopfhörer, Ohr, Koffer, eigentlich, geschichte"
                 }
             }
             submitInput(classes = "btn btn-lg btn-secondary") {

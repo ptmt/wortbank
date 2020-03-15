@@ -7,34 +7,22 @@ import io.ktor.features.CallLogging
 import io.ktor.features.DefaultHeaders
 import io.ktor.features.StatusPages
 import io.ktor.html.respondHtml
-import io.ktor.http.HttpStatusCode
 import io.ktor.http.content.resource
 import io.ktor.http.content.static
 import io.ktor.response.respond
 import io.ktor.response.respondRedirect
 import io.ktor.routing.get
-import io.ktor.routing.post
 import io.ktor.routing.routing
 import kotlinx.html.*
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
-import org.jetbrains.exposed.sql.transactions.transactionManager
-import org.sqlite.SQLiteConfig
-import org.wortbank.indexer.Indexer
 import org.wortbank.indexer.Storage
 import org.wortbank.indexer.WikiIndexer
 
-fun HTML.sharedHeader(title: String = "WortBank — search specific texts based on given set of words") {
-    head {
-        title(title)
-        styleLink("https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css")
-        styleLink("/static/wortbank.css")
-    }
-}
 
 fun <T> Database.tx(statement: Transaction.() -> T): T {
     return transaction(1, 1, this) {
-        addLogger(StdOutSqlLogger)
+        // addLogger(StdOutSqlLogger)
         statement()
     }
 }
@@ -73,7 +61,7 @@ class WortBankApplication {
         routing {
             get("/") {
                 call.respondHtml {
-                    sharedHeader()
+                    sharedHead()
                     landingPage()
                 }
             }
@@ -83,15 +71,15 @@ class WortBankApplication {
                     return@get
                 }
                 val words = bank.split(",").map { it.trim() }
-                val results = storage.search(words).joinToString("\n") { "${it.lemmas.size} matches in ${it.document.title}" }
+                val results = storage.search(words)
                 call.respondHtml {
-                    sharedHeader("WortBank — Search Results")
+                    sharedHead("WortBank — Search Results")
                     searchResultPage(bank, results)
                 }
             }
             get("/stats") {
                 call.respondHtml {
-                    sharedHeader("WortBank — Stats")
+                    sharedHead("WortBank — Stats")
                     val lemmas = tx {
                         ELemma.all().limit(100).toList()
                     }
@@ -101,7 +89,7 @@ class WortBankApplication {
             get("/perform_index") {
                 WikiIndexer(storage).perform()
                 call.respondHtml {
-                    sharedHeader()
+                    sharedHead()
                     page {
                         ul {
                             li {

@@ -60,28 +60,28 @@ class WikiIndexer(override val storage: Storage) : Indexer {
     }
 
     data class TokenizedPage(val title: String, val lemmas: Map<String, Int>)
-    private suspend fun XMLStreamReader.readPages(source: ESource)  {
+
+    private suspend fun XMLStreamReader.readPages(source: ESource) {
         var i = 0
-        // val channel = Channel<TokenizedPage>(Channel.UNLIMITED)
-        //GlobalScope.launch {
-            while (hasNext() && i < 30) {
-                if (this@readPages.eventType == XMLStreamReader.START_ELEMENT && this@readPages.localName == "page") {
-                    val frequencyMap = mutableMapOf<String, Int>()
-                    val page = readPage()
-                    val parsedPage = parseWikiText(page.title, page.text)
-                    println("parsed title <${page.title}> text length ${page.text.length}, total tokens ${parsedPage.lemmas.size}")
-                    parsedPage.lemmas.forEach {
-                        val prev = frequencyMap.getOrPut(it) { 0 }
-                        frequencyMap[it] = prev + 1
-                    }
-                    // channel.send(TokenizedPage(page.title, frequencyMap))
-                    storage.savePage(source, page.title, frequencyMap)
-                    yield()
-                    i++
+
+        while (hasNext() && i < 3000) {
+            if (this@readPages.eventType == XMLStreamReader.START_ELEMENT && this@readPages.localName == "page") {
+                val frequencyMap = mutableMapOf<String, Int>()
+                val page = readPage()
+                val parsedPage = parseWikiText(page.title, page.text)
+                println("parsed title <${page.title}> text length ${page.text.length}, total tokens ${parsedPage.lemmas.size}")
+                parsedPage.lemmas.forEach {
+                    val prev = frequencyMap.getOrPut(it) { 0 }
+                    frequencyMap[it] = prev + 1
                 }
-                next()
+                // channel.send(TokenizedPage(page.title, frequencyMap))
+                storage.savePage(source, page.title, frequencyMap)
+                yield()
+                i++
             }
-     //   }
+            next()
+        }
+
 
 //        val topTokens = frequencyMap.entries.sortedByDescending { it.value }.take(30).joinToString("\n")
 //        println(topTokens)
