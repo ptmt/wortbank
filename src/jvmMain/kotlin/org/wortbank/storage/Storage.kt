@@ -1,11 +1,10 @@
-package org.wortbank.indexer
+package org.wortbank.storage
 
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.Transaction
 import org.jetbrains.exposed.sql.select
 import org.wortbank.*
 import java.time.Instant
-import java.util.*
 
 class Storage(private val db: Database) {
     fun getOrPutSource(sourceName: String, sourceUrl: String): ESource {
@@ -42,17 +41,20 @@ class Storage(private val db: Database) {
 
     fun search(words: List<String>): List<SearchResult> {
         val res = db.tx {
-            DBLemmasInDocuments.innerJoin(DBLemmas).innerJoin(DBDocuments)
+            DBLemmasInDocuments.innerJoin(DBLemmas).innerJoin(
+                    DBDocuments
+                )
                 .select { DBLemmas.lemma inList words }
                 .orderBy(DBLemmasInDocuments.count)
                 .map {
                     Pair(EDocument.wrapRow(it), Pair(it[DBLemmas.lemma], it[DBLemmasInDocuments.count]))
                 }
         }
-       return res.groupBy({ it.first }) {
+        return res.groupBy({ it.first }) {
                 it.second
             }.map { SearchResult(it.key, it.value.toMap()) }
             .sortedByDescending { it.lemmas.size }
+            .take(100)
     }
 
     private fun Transaction.getOrPutLemma(lemma: String): ELemma {

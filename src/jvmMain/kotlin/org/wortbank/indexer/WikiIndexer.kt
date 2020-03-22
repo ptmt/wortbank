@@ -5,16 +5,15 @@ import java.io.File
 import java.io.FileReader
 import javax.xml.stream.XMLInputFactory
 import javax.xml.stream.XMLStreamReader
-import kotlinx.coroutines.channels.*
-import kotlinx.coroutines.*
-import org.wortbank.ESource
+import org.wortbank.storage.ESource
+import org.wortbank.storage.Storage
 
 class WikiIndexer(override val storage: Storage) : Indexer {
     class Page(val title: String, val text: String)
 
     override val sourceName = "WIKI_DE"
     private val fileSource = "./dewiki.xml"
-    private val url = "https://de.wikipedia.org/"
+    private val url = "https://de.wikipedia.org/wiki/"
 
     override suspend fun perform() {
         val stream = openStream(fileSource)

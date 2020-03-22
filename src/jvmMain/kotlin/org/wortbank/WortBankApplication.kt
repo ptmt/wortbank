@@ -16,8 +16,8 @@ import io.ktor.routing.routing
 import kotlinx.html.*
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
-import org.wortbank.indexer.Storage
 import org.wortbank.indexer.WikiIndexer
+import org.wortbank.storage.*
 
 
 fun <T> Database.tx(statement: Transaction.() -> T): T {
@@ -32,7 +32,12 @@ fun <T> WortBankApplication.tx(statement: Transaction.() -> T) = db.tx(statement
 class WortBankApplication {
     val db = Database.connect("jdbc:sqlite:./index.db", "org.sqlite.JDBC").apply {
         tx {
-            SchemaUtils.create(DBSources, DBLemmas, DBLemmasInDocuments, DBDocuments)
+            SchemaUtils.create(
+                DBSources,
+                DBLemmas,
+                DBLemmasInDocuments,
+                DBDocuments
+            )
         }
     }
 
@@ -74,7 +79,7 @@ class WortBankApplication {
                 val results = storage.search(words)
                 call.respondHtml {
                     sharedHead("WortBank — Search Results")
-                    searchResultPage(bank, results)
+                    searchResultPage(words, results)
                 }
             }
             get("/stats") {
