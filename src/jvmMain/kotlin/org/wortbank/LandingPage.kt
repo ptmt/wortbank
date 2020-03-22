@@ -3,11 +3,9 @@ package org.wortbank
 import kotlinx.html.*
 
 fun HTML.landingPage() {
-    coverPage {
-        a(href = "/") {
-            h1("cover-heading") {
-                +"WortBank"
-            }
+    page {
+        p() {
+            +"Enter up to 100 words below:"
         }
         form("/search", method = FormMethod.get) {
             p("lead") {
