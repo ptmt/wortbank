@@ -16,6 +16,7 @@ fun HTML.searchResultPage(query: List<String>, result: List<SearchResult>) {
         div()
 
         result.forEach {
+            p()
             div(classes = "card w-75") {
                 div(classes = "card-body") {
 
@@ -24,12 +25,12 @@ fun HTML.searchResultPage(query: List<String>, result: List<SearchResult>) {
                     }
 
                     h6(classes = "card-subtitle mb-2 text-muted") {
-                        +"Found: ${it.lemmas.size} (${((it.lemmas.size.toDouble() / query.size.toDouble()) * 100.0).roundToInt()}%)"
+                        +"Found: ${it.lemmas.size} (${((it.lemmas.size.toDouble() / query.size.toDouble()) * 100.0).roundToInt()}%), total unique words: ${it.totalUniqueLemmas}"
                     }
 
                     p(classes = "card-text") {
                         small {
-                            +it.lemmas.entries.joinToString(", ") { "${it.key} (${it.value})" }
+                            +it.lemmas.entries.sortedByDescending { it.value }.joinToString(", ") { "${it.key} (${it.value})" }
                         }
                     }
                     a(classes = "card-link", href = it.document.url) { +it.document.url }

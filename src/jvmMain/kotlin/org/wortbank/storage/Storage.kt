@@ -1,7 +1,9 @@
 package org.wortbank.storage
 
+import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.Transaction
+import org.jetbrains.exposed.sql.count
 import org.jetbrains.exposed.sql.select
 import org.wortbank.*
 import java.time.Instant
@@ -39,6 +41,17 @@ class Storage(private val db: Database) {
         }
     }
 
+    private fun totalAmountOfLemmas(documents: List<EntityID<Int>>): Map<EntityID<Int>, Int> {
+        return db.tx {
+            DBLemmasInDocuments.innerJoin(DBDocuments)
+                .slice(DBLemmasInDocuments.id.count(), DBDocuments.id)
+                .select { DBDocuments.id inList documents }
+                .groupBy(DBDocuments.id)
+                .map { it[DBDocuments.id] to it[DBLemmasInDocuments.id.count()] }
+                .toMap()
+        }
+    }
+
     fun search(words: List<String>): List<SearchResult> {
         val res = db.tx {
             DBLemmasInDocuments.innerJoin(DBLemmas).innerJoin(
@@ -50,11 +63,18 @@ class Storage(private val db: Database) {
                     Pair(EDocument.wrapRow(it), Pair(it[DBLemmas.lemma], it[DBLemmasInDocuments.count]))
                 }
         }
-        return res.groupBy({ it.first }) {
-                it.second
-            }.map { SearchResult(it.key, it.value.toMap()) }
-            .sortedByDescending { it.lemmas.size }
+        val docs = res.groupBy({ it.first }) { it.second }
+            .map { it.key to it.value.toMap() }
+            .asSequence()
+            .sortedByDescending { it.second.size }
             .take(100)
+
+        val lemmasInDocs = totalAmountOfLemmas(docs.map { it.first.id }.toList())
+
+        return docs.map { SearchResult(
+            it.first,
+            it.second.toMap(),
+            lemmasInDocs[it.first.id] ?: 0) }.toList()
     }
 
     private fun Transaction.getOrPutLemma(lemma: String): ELemma {
@@ -65,4 +85,4 @@ class Storage(private val db: Database) {
     }
 }
 
-data class SearchResult(val document: EDocument, val lemmas: Map<String, Int>)
+data class SearchResult(val document: EDocument, val lemmas: Map<String, Int>, val totalUniqueLemmas: Int)
