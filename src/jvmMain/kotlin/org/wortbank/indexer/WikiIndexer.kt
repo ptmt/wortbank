@@ -63,18 +63,22 @@ class WikiIndexer(override val storage: Storage) : Indexer {
     private suspend fun XMLStreamReader.readPages(source: ESource) {
         var i = 0
 
-        while (hasNext() && i < 3000) {
+        while (hasNext()) {
             if (this@readPages.eventType == XMLStreamReader.START_ELEMENT && this@readPages.localName == "page") {
                 val frequencyMap = mutableMapOf<String, Int>()
                 val page = readPage()
-                val parsedPage = parseWikiText(page.title, page.text)
-                println("parsed title <${page.title}> text length ${page.text.length}, total tokens ${parsedPage.lemmas.size}")
-                parsedPage.lemmas.forEach {
-                    val prev = frequencyMap.getOrPut(it) { 0 }
-                    frequencyMap[it] = prev + 1
+                if (!storage.existPage(page.title)) {
+                    val parsedPage = parseWikiText(page.title, page.text)
+                    println("parsed title <${page.title}> text length ${page.text.length}, total tokens ${parsedPage.lemmas.size}")
+                    parsedPage.lemmas.forEach {
+                        val prev = frequencyMap.getOrPut(it) { 0 }
+                        frequencyMap[it] = prev + 1
+                    }
+                    // channel.send(TokenizedPage(page.title, frequencyMap))
+                    storage.savePage(source, page.title, frequencyMap)
+                } else {
+                    println("Skip ${page.title}")
                 }
-                // channel.send(TokenizedPage(page.title, frequencyMap))
-                storage.savePage(source, page.title, frequencyMap)
                 yield()
                 i++
             }

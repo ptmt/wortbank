@@ -6,6 +6,7 @@ import org.jetbrains.exposed.sql.Transaction
 import org.jetbrains.exposed.sql.count
 import org.jetbrains.exposed.sql.select
 import org.wortbank.*
+import org.wortbank.storage.DBDocuments.title
 import java.time.Instant
 
 class Storage(private val db: Database) {
@@ -19,6 +20,12 @@ class Storage(private val db: Database) {
         }
     }
 
+    fun existPage(title: String): Boolean {
+        return db.tx {
+            EDocument.find { DBDocuments.title eq title }.count() > 0
+        }
+    }
+
     fun savePage(source: ESource, title: String, lemmas: Map<String, Int>) {
         val document = db.tx {
             val existing = EDocument.find { DBDocuments.title eq title }.singleOrNull()
@@ -29,7 +36,7 @@ class Storage(private val db: Database) {
                 this.provider = source.id
             }
         }
-        lemmas.entries.forEach {
+        lemmas.entries.filter { it.key.length < 50 }.forEach {
             db.tx {
                 val lemma = getOrPutLemma(it.key)
                 ELemmaInDocument.new {
