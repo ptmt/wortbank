@@ -48,7 +48,7 @@ class WikiIndexer(override val storage: Storage) : Indexer {
         return null
     }
 
-    private fun XMLStreamReader.readPage(): Page {
+    private fun XMLStreamReader.readPage(): Page? {
         var parsedTitle: String? = null
         var parsedText: String? = null
         while (hasNext() && !(this.eventType == XMLStreamReader.END_ELEMENT && this.localName == "page")) {
@@ -56,7 +56,14 @@ class WikiIndexer(override val storage: Storage) : Indexer {
             readFieldIfPresent("text")?.let { parsedText = it }
             next()
         }
-        return Page(parsedTitle ?: error("title has not been found"), parsedText ?: error("text has not been found"))
+        return if (parsedTitle != null && parsedText != null) {
+             Page(
+                parsedTitle ?: error("title has not been found"),
+                parsedText ?: error("text has not been found")
+            )
+        } else {
+            null
+        }
     }
 
     data class TokenizedPage(val title: String, val lemmas: Map<String, Int>)
@@ -68,7 +75,7 @@ class WikiIndexer(override val storage: Storage) : Indexer {
             if (this@readPages.eventType == XMLStreamReader.START_ELEMENT && this@readPages.localName == "page") {
                 val frequencyMap = mutableMapOf<String, Int>()
                 val page = readPage()
-                if (!storage.existPage(page.title)) {
+                if (page != null && !storage.existPage(page.title)) {
                     val parsedPage = parseWikiText(page.title, page.text)
                     println("parsed title <${page.title}> text length ${page.text.length}, total tokens ${parsedPage.lemmas.size}")
                     parsedPage.lemmas.forEach {
@@ -78,7 +85,7 @@ class WikiIndexer(override val storage: Storage) : Indexer {
                     // channel.send(TokenizedPage(page.title, frequencyMap))
                     storage.savePage(source, page.title, frequencyMap)
                 } else {
-                    println("Skip ${page.title}")
+                    println("Skip ${page?.title}")
                 }
                 yield()
                 i++
