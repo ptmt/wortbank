@@ -35,7 +35,8 @@ class WikiIndexer(override val storage: Storage) : Indexer {
         if (this.hasName() && this.localName == name) {
             next()
             if (!hasText()) {
-                error("invalid state, element should have text content")
+                println("$name has no text")
+                return null
             }
             val str = StringBuilder()
             while (hasText()) {
