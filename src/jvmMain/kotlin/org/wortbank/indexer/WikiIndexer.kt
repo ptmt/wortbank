@@ -67,7 +67,7 @@ class WikiIndexer(override val storage: Storage) : Indexer {
                 }
                 if (title != null && text != null) {
                     if (!skip && title!!.length < 200) {
-                        pages.offer(Page(title!!, text!!))
+                        pages.trySend(Page(title!!, text!!))
                     } else {
                         println("skip $title")
                     }
@@ -78,7 +78,7 @@ class WikiIndexer(override val storage: Storage) : Indexer {
             //overriding the characters() method of DefaultHandler
             override fun characters(ch: CharArray, start: Int, length: Int) {
                 if (currentElement) {
-                    if (title == "Verordnung über die Aufstellung von Betriebskosten") {
+                    if (title == "Helikon-Oper") {
                         skip = false
                     }
                     currentValue += String(ch, start, length)

@@ -27,6 +27,13 @@ object DBLemmasInDocuments: IntIdTable() {
     val lemma = reference("lemma", DBLemmas)
 }
 
+object DBWordle: IntIdTable() {
+    val word = varchar("word", 255).uniqueIndex()
+    val validated = bool("validated").default(false)
+    val meta = varchar("meta", 10)
+    val freq = integer("freq").default(0)
+}
+
 class ESource(id: EntityID<Int>) : IntEntity(id) {
     companion object : IntEntityClass<ESource>(DBSources)
 
@@ -39,6 +46,16 @@ class ELemma(id: EntityID<Int>) : IntEntity(id) {
 
     var lemma by DBLemmas.lemma
 }
+
+class EWordle(id: EntityID<Int>) : IntEntity(id) {
+    companion object : IntEntityClass<EWordle>(DBWordle)
+
+    var word by DBWordle.word
+    var validated by DBWordle.validated
+    var meta by DBWordle.meta
+    var freq by DBWordle.freq
+}
+
 
 class EDocument(id: EntityID<Int>) : IntEntity(id) {
     companion object : IntEntityClass<EDocument>(DBDocuments)

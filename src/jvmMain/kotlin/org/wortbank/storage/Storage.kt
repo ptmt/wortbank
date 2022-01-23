@@ -48,14 +48,42 @@ class Storage(private val db: Database) {
         }
     }
 
+    fun wordleBatch(amount: Int): List<EWordle> {
+        return db.tx {
+            EWordle.find { DBWordle.validated eq false }.limit(amount).toList()
+        }
+    }
+
+    fun totalUnprocessedWordle(): Int {
+        return db.tx {
+            EWordle.find { DBWordle.validated eq false }.count()
+        }
+    }
+    fun totalProcessedWordle(): Int {
+        return db.tx {
+            EWordle.find { DBWordle.validated eq true }.count()
+        }
+    }
+
+    fun wordFreqs(words: Set<String>): Map<String, Int> {
+        return db.tx {
+            DBLemmasInDocuments.innerJoin(DBLemmas)
+                .slice(DBLemmasInDocuments.id.count(), DBLemmas.lemma)
+                .select { DBLemmas.lemma inList words }
+                .groupBy(DBLemmas.lemma)
+                .associate { it[DBLemmas.lemma] to it[DBLemmasInDocuments.id.count()] }
+        }
+    }
+
+    fun tx(run: () -> Unit) = db.tx { run() }
+
     private fun totalAmountOfLemmas(documents: List<EntityID<Int>>): Map<EntityID<Int>, Int> {
         return db.tx {
             DBLemmasInDocuments.innerJoin(DBDocuments)
                 .slice(DBLemmasInDocuments.id.count(), DBDocuments.id)
                 .select { DBDocuments.id inList documents }
                 .groupBy(DBDocuments.id)
-                .map { it[DBDocuments.id] to it[DBLemmasInDocuments.id.count()] }
-                .toMap()
+                .associate { it[DBDocuments.id] to it[DBLemmasInDocuments.id.count()] }
         }
     }
 

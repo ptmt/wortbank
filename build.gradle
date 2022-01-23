@@ -6,7 +6,7 @@ buildscript {
 }
 
 plugins {
-    id 'org.jetbrains.kotlin.multiplatform' version '1.3.70'
+    id 'org.jetbrains.kotlin.multiplatform' version '1.6.10'
 }
 repositories {
     jcenter()
@@ -17,8 +17,8 @@ def ktor_version = '1.1.3'
 def logback_version = '1.2.3'
 def exposed_version = "0.21.1"
 def sqlite_version = "3.36.0.3"
-def dkpro_version = "2.1.0"
-def coroutines_version = "1.3.4"
+def dkpro_version = "2.2.0"
+def coroutines_version = "1.6.0"
 
 kotlin {
     jvm()
@@ -42,7 +42,6 @@ kotlin {
         jvmMain {
             dependencies {
                 implementation kotlin('stdlib-jdk8')
-                // implementation "org.jetbrains.kotlinx:kotlinx-coroutines-jdk:$coroutines_version"
                 implementation "io.ktor:ktor-server-netty:$ktor_version"
                 implementation "io.ktor:ktor-html-builder:$ktor_version"
                 implementation "ch.qos.logback:logback-classic:$logback_version"
@@ -58,6 +57,8 @@ kotlin {
                 implementation "org.dkpro.core:dkpro-core-opennlp-asl:$dkpro_version"
                 implementation "org.dkpro.core:dkpro-core-io-json-asl:$dkpro_version"
                 implementation "org.dkpro.core:dkpro-core-io-tiger-asl:$dkpro_version"
+                implementation "org.dkpro.core:dkpro-core-matetools-gpl:$dkpro_version"
+                implementation "org.dkpro.core:dkpro-core-corenlp-gpl:$dkpro_version"
             }
         }
         jvmTest {
@@ -79,10 +80,6 @@ kotlin {
     }
 }
 
-//jvmJar {
-//    dependsOn(jsBrowserProductionWebpack)
-//    from(new File(jsBrowserProductionWebpack.entry.name, jsBrowserProductionWebpack.outputPath))
-//}
 
 task run(type: JavaExec, dependsOn: [jvmJar]) {
     group = "application"

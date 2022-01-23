@@ -11,13 +11,13 @@ import io.ktor.http.content.resource
 import io.ktor.http.content.static
 import io.ktor.response.respond
 import io.ktor.response.respondRedirect
-import io.ktor.routing.get
-import io.ktor.routing.routing
+import io.ktor.routing.*
 import kotlinx.html.*
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.wortbank.indexer.WikiIndexer
 import org.wortbank.storage.*
+import org.wortbank.wordle.WordleFilter
 
 
 fun <T> Database.tx(statement: Transaction.() -> T): T {
@@ -91,7 +91,7 @@ class WortBankApplication {
                     statsPage(lemmas.joinToString("\n") { it.lemma })
                 }
             }
-            get("/perform_index") {
+            post("/perform_index") {
                 WikiIndexer(storage).perform()
                 call.respondHtml {
                     sharedHead()
@@ -116,6 +116,22 @@ class WortBankApplication {
                                 +"Lemmas: $lemmas"
                             }
                         }
+                    }
+                }
+            }
+            get("/prepare_wordle") {
+                val (processed, notprocessed) = WordleFilter(storage).filterWords()
+                call.respondHtml {
+                    sharedHead()
+                    page {
+                        h2 {
+                            +"Processed: $processed"
+
+                        }
+                        h2 {
+                            +"Not processed: $notprocessed "
+                        }
+
                     }
                 }
             }
